@@ -13,12 +13,12 @@ exports.connect = function(){
             throw err;
         } else {
             client = tempClient;
+            dataBase = client.db("floatLibrary");
         }
     });
 }
 
 
-exports.getCollection = function(DATABASE_NAME,COLLECTION_NAME){
-    dataBase = client.db(DATABASE_NAME);
+exports.getCollection = function(COLLECTION_NAME){
     return dataBase.collection(COLLECTION_NAME);
 };

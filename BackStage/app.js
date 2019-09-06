@@ -5,7 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 var accountRouter = require('./routes/account');
-
+var forumRouter = require('./routes/forum');
 
 var app = express();
 
@@ -24,7 +24,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/',accountRouter);
-
+app.use('/forum',forumRouter);
 
 
 // catch 404 and forward to error handler

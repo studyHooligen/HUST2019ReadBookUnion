@@ -15,7 +15,29 @@ router.all('*', function(req, res, next) {
 	next();
 });
 
-
+/*
+发帖
+*/
+router.post('/post',urlencodedParser,function(req,res,next){
+	var userCollection = informationDB.getCollection("user");
+	var postCollection = informationDB.getCollection("post");
+	var now = new Date();
+	var postData={
+		title       : req.body.title,
+		book        : req.body.book,
+		content     : req.body.content,
+		creator     : req.body.creator,
+		like		: [],
+		comments	: [],
+		date		: { month : now.getMonth()+1 , day : now.getDay()+1 }
+	};
+	console.log(postData);
+	postCollection.insert(postData);
+	res.status(200).json({
+		code	: 1,
+		msg		: "success"
+	})
+});
 
 module.exports = router;
 
