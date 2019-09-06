@@ -28,7 +28,7 @@ router.post('/login', urlencodedParser, function (req, res, next) {
 	}
 	
 	let accountCollection = informationDB.getCollection("user");
-	accountCollection.findOne({account: UserData.account}, function (err, data) {
+	accountCollection.findOne({uid: UserData.uid}, function (err, data) {
 		if (data) {
 			if (UserData.password == data.password){
 				res.status(200).json({ "code": 1 ,"msg": "登陆成功"})
@@ -63,14 +63,19 @@ router.post('/register', urlencodedParser, function (req, res, next) {
 	
 	let enrollmentCollection = informationDB.getCollection("user");
 	enrollmentCollection.findOne({uid: submitData.uid}, function (err, data) {
-		if (data) {
-			enrollmentCollection.insert(submitData);
+		if (!data) {  
+			enrollmentCollection.insert(submitData);  
 			res.status(200).json({ "code": 1 ,"msg": "提交成功"});
+		}
+		else{   
+			res.status(200).json({
+				code : -1,
+				msg : "fail"
+			})
 		}
 
 	});
 });
-
 
 
 
