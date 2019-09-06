@@ -32,11 +32,27 @@ router.post('/post',urlencodedParser,function(req,res,next){
 		date		: { month : now.getMonth()+1 , day : now.getDay()+1 }
 	};
 	console.log(postData);
-	postCollection.insert(postData);
-	res.status(200).json({
-		code	: 1,
-		msg		: "success"
-	})
+	postCollection.insertOne(postData);
+	var postMan = userCollection.findOne({ userName : postData.creator });
+	var postHis = toArray(postMan.post).push(postData._id);
+	userCollection.updateOne({_id : postData._id},{$set : { post : postHis}},function(err,res){
+		if(err)
+		{
+			res.status(200).json({
+				code	: -1,
+				msg		: "sorry"
+			});
+			return;
+		}
+		else{
+
+			res.status(200).json({
+				code	: 1,
+				msg		: "success"
+			});
+		}
+	});
+
 });
 
 module.exports = router;
