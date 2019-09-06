@@ -16,22 +16,18 @@ router.all('*', function(req, res, next) {
 });
 
 
-
-informationDB.connect("USER")
-informationDB.connect("ADMIN")
-
 /*
  * @function 用户登录
  * @param account(string) 账户, password(string) 密码
  * @return code(int) , msg(string)
  */
-router.post('/user/sign', urlencodedParser, function (req, res, next) {
+router.post('/login', urlencodedParser, function (req, res, next) {
 	let UserData = {
 		uid: req.body.uid,
 		password: req.body.password
 	}
 	
-	let accountCollection = informationDB.getCollection("ACCOUNT");
+	let accountCollection = informationDB.getCollection("user");
 	accountCollection.findOne({account: UserData.account}, function (err, data) {
 		if (data) {
 			if (UserData.password == data.password){
@@ -55,7 +51,7 @@ router.post('/user/sign', urlencodedParser, function (req, res, next) {
  * major(string)院系，address(string)住址,password(string)密码
  * @return code(int) , msg(string)
  */
-router.post('/user/login', urlencodedParser, function (req, res, next) {
+router.post('/register', urlencodedParser, function (req, res, next) {
 	let submitData = {
 		nickname:               req.body.nickname,
 		phone:              req.body.phone,
@@ -65,7 +61,7 @@ router.post('/user/login', urlencodedParser, function (req, res, next) {
 		password:           req.body.password
 	}
 	
-	let enrollmentCollection = informationDB.getCollection("ENROLLMENT");
+	let enrollmentCollection = informationDB.getCollection("user");
 	enrollmentCollection.findOne({uid: submitData.uid}, function (err, data) {
 		if (data) {
 			enrollmentCollection.insert(submitData);
