@@ -22,7 +22,7 @@ informationDB.connect("USER")
  * @param
  * @return code(int) , msg(string)
  */
-router.post('/forum/borrowBook',urlencodedParser,function(req,res,next){
+router.post('/book/borrow',urlencodedParser,function(req,res,next){
 	//假设前端已完成登录
 	BookCollection=informationDB.getCollection('BOOKS');
 	UserCollection=informationDB.getCollection('ACCOUNT');
@@ -91,7 +91,7 @@ router.post('/forum/borrowBook',urlencodedParser,function(req,res,next){
  * @param
  * @return code(int) , msg(string)
  */
-router.post('/forum/returnBook',urlencodedParser,function(req,res,next){
+router.post('/book/return',urlencodedParser,function(req,res,next){
 	BookCollection=informationDB.getCollection('BOOKS');
 	UserCollection=informationDB.getCollection('ACCOUNT');
 	BorrowCollection=informationDB.getCollection('BORROW');
