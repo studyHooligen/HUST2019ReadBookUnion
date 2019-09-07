@@ -81,7 +81,7 @@ router.post("/discuss",urlencodedParser,function(req,res,next){
 		father		: req.body.postID,
 		commentator	: req.body.discussor,
 		content		: req.body.content,
-		like 		: 0
+		like 		: []
 	};
 	console.log(discussBody);
 	commentCollection.insertOne(discussBody);
@@ -114,6 +114,72 @@ router.post("/discuss",urlencodedParser,function(req,res,next){
 		})
 	})
 });
+
+/*
+点赞评论
+*/
+router.post('/like',urlencodedParser,function(req,res,next){
+	var commentCollection = informationDB.getCollection('comment');
+	var userCollection = informationDB.getCollection('user');
+
+	var likeBody = {
+		commentID	: ObjectID(req.body.commentID),
+		liker		: req.body.liker
+	};
+
+	commentCollection.findOne({ _id : likeBody.commentID},function(err,findResCom){
+		if(err)
+			{
+				res.status(200).json({
+					code: -1,
+					msg	: "fail"
+				});
+				return;
+			}
+		console.log("find comment success!");
+		var likeList = findResCom.like.push(likeBody.liker);
+		commentCollection.updateOne({ _id : likeBody.commentID},{$set: {like : likeList}},function(err,updateResCom){
+			if(err)
+			{
+				res.status(200).json({
+					code: -1,
+					msg	: "fail"
+				});
+				return;
+			}
+			console.log("update comment success!");
+			userCollection.findOne({_id : likeBody.liker},function(err,findResUser){
+				if(err)
+				{
+					res.status(200).json({
+						code: -1,
+						msg	: "fail"
+					});
+					return;
+				}
+				console.log("find User success!");
+				var likeList = findResUser.like.push(likeBody.commentID);
+				userCollection.updateOne({_id : likeBody.liker},{$set : {like : likeList}},function(err,updateResUser){
+					if(err)
+					{
+						res.status(200).json({
+							code: -1,
+							msg	: "fail"
+						});
+						return;
+					}
+					console.log("update User success!");
+					res.status(200).json({
+						code: 1,
+						msg	: "success"
+					});
+					console.log("finish!");
+					return;
+				})
+			})
+		})
+	});
+})
 
 module.exports = router;
 
