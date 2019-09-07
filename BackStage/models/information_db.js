@@ -14,6 +14,7 @@ exports.connect = function(){
         } else {
             client = tempClient;
             dataBase = client.db("floatLibrary");
+            console.log("Connect Database success!");
         }
     });
 }
