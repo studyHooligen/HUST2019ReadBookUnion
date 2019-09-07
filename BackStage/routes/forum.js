@@ -33,26 +33,42 @@ router.post('/post',urlencodedParser,function(req,res,next){
 	};
 	console.log(postData);
 	postCollection.insertOne(postData);
-	var postMan = userCollection.findOne({ userName : postData.creator });
-	var postHis = toArray(postMan.post).push(postData._id);
-	userCollection.updateOne({_id : postData._id},{$set : { post : postHis}},function(err,res){
+	userCollection.findOne({ userName : postData.creator },function(err,postMan){
 		if(err)
 		{
+			console.log("/forum/post error!");
 			res.status(200).json({
-				code	: -1,
-				msg		: "sorry"
+				code: -2,
+				msg	: "error User!"
 			});
 			return;
 		}
-		else{
-
-			res.status(200).json({
-				code	: 1,
-				msg		: "success"
+		// console.log(typeof postMan.post);
+		arrData = postMan.post;
+		// postMan.post.toArray(function(err,arrData){
+			arrData.push(postData._id);
+			userCollection.updateOne({userName : postData.creator},{$set : { post : arrData}},function(err,updateRes){
+				if(err)
+				{
+					res.status(200).json({
+						code	: -1,
+						msg		: "sorry"
+					});
+					return;
+				}
+				else{
+		
+					res.status(200).json({
+						code	: 1,
+						msg		: "success"
+					});
+					return;
+				}
 			});
-		}
-	});
+		// });
+	
 
+	});
 });
 
 module.exports = router;
