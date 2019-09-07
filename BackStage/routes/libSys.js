@@ -15,8 +15,6 @@ router.all('*', function(req, res, next) {
 	next();
 });
 
-informationDB.connect("BOOK")
-informationDB.connect("USER")
 /*
  * @function 借书
  * @param
@@ -28,6 +26,7 @@ router.post('/book/borrow',urlencodedParser,function(req,res,next){
 	UserCollection=informationDB.getCollection('ACCOUNT');
 	BorrowCollection=informationDB.getCollection('BORROW');
 
+
 	BookCollection.findOne({bid : req.body.bookID},function(err,bookSituation){
 		if(err) console.log("ERROR:" + err);
 		else{
@@ -37,7 +36,7 @@ router.post('/book/borrow',urlencodedParser,function(req,res,next){
 				else {
 					UserCollection.findOne({uid : req.body.uid},function(err,userD){
 						//console.log(userD);  //测试打开
-						if(userD.borrowing.length>=2) res.status(200).json({code : -1, msg :"没有权限借书"});
+						if(userD.borrowing.length>=1) res.status(200).json({code : -1, msg :"没有权限借书"});
 						else{
 							let nowDate= new Date();
 
@@ -93,7 +92,7 @@ router.post('/book/borrow',urlencodedParser,function(req,res,next){
  */
 router.post('/book/return',urlencodedParser,function(req,res,next){
 	BookCollection=informationDB.getCollection('BOOKS');
-	UserCollection=informationDB.getCollection('ACCOUNT');
+	UserCollection=informationDB.getCollection('user');
 	BorrowCollection=informationDB.getCollection('BORROW');
 	HistoryCollecion=informationDB.getCollection('HISTORY');
 
@@ -117,8 +116,9 @@ router.get('/admin/deleteBook',urlencodedParser,function(req,res,next){
 
 	BookCollection=informationDB.getCollection('BOOK');
 
-	BookCollection.delete({'_id' : ObjectID(req.body._id)},function(err,next){
-		if(!_id) res.status(200).json({'code' : 1, 'msg' : "删除成功"});
+	BookCollection.deleteOne({'_id' : ObjectID(req.body._id)},function(err,next){
+		if(!'_id') 
+		res.status(200).json({'code' : 1, 'msg' : "删除成功"});
 		else
          {
 			res.status(200).json({
