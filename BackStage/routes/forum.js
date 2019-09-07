@@ -71,5 +71,49 @@ router.post('/post',urlencodedParser,function(req,res,next){
 	});
 });
 
+/*
+评论帖子
+*/
+router.post("/discuss",urlencodedParser,function(req,res,next){
+	var postCollection = informationDB.getCollection("post");
+	var commentCollection = informationDB.getCollection("comment");
+	var discussBody = {
+		father		: req.body.postID,
+		commentator	: req.body.discussor,
+		content		: req.body.content,
+		like 		: 0
+	};
+	console.log(discussBody);
+	commentCollection.insertOne(discussBody);
+	postCollection.findOne({_id : ObjectID(discussBody.father) },function(err, findRes){
+		if(!findRes || err)
+		{
+			res.status(200).json({
+				code: -1,
+				msg	: "fail"
+			});
+			return;
+		}
+		console.log(findRes);
+		var comments = findRes.comments;
+		comments.push(discussBody._id);
+		postCollection.updateOne({_id : discussBody.father},{$set : {comment : comments}},function(err,updateRes){
+			if(err)
+			{
+				res.status(200).json({
+					code: -1,
+					msg	: "fail"
+				});
+				return;
+			}
+			res.status(200).json({
+				code: 1,
+				msg	: "success"
+			});
+			return;
+		})
+	})
+});
+
 module.exports = router;
 
