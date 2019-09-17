@@ -15,8 +15,6 @@ router.all('*', function(req, res, next) {
 	next();
 });
 
-informationDB.connect("BOOK")
-informationDB.connect("USER")
 /*
  * @function 借书
  * @param

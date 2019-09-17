@@ -136,9 +136,76 @@ router.post('/like',urlencodedParser,function(req,res,next){
 				});
 				return;
 			}
-		console.log("find comment success!");
+		// console.log("find comment success!");
 		var likeList = findResCom.like.push(likeBody.liker);
 		commentCollection.updateOne({ _id : likeBody.commentID},{$set: {like : likeList}},function(err,updateResCom){
+			if(err)
+			{
+				res.status(200).json({
+					code: -1,
+					msg	: "fail"
+				});
+				return;
+			}
+			// console.log("update comment success!");
+			userCollection.findOne({_id : likeBody.liker},function(err,findResUser){
+				if(err)
+				{
+					res.status(200).json({
+						code: -1,
+						msg	: "fail"
+					});
+					return;
+				}
+				// console.log("find User success!");
+				var likeList = findResUser.like.push(likeBody.commentID);
+				userCollection.updateOne({_id : likeBody.liker},{$set : {like : likeList}},function(err,updateResUser){
+					if(err)
+					{
+						res.status(200).json({
+							code: -1,
+							msg	: "fail"
+						});
+						return;
+					}
+					// console.log("update User success!");
+					res.status(200).json({
+						code: 1,
+						msg	: "success"
+					});
+					// console.log("finish!");
+					return;
+				})
+			})
+		})
+	});
+})
+
+/*
+点赞帖子
+*/
+router.post('/likePost',urlencodedParser,function(req,res,next){
+	var postCollection = informationDB.getCollection('post');
+	var userCollection = informationDB.getCollection('user');
+
+	var likeBody = {
+		postID	: ObjectID(req.body.postID),
+		liker		: req.body.liker
+	};
+
+	postCollection.findOne({ _id : likeBody.postID},function(err,findResPost){
+		if(err || ! findResPost)
+			{
+				res.status(200).json({
+					code: -1,
+					msg	: "fail"
+				});
+				return;
+			}
+		console.log("find comment success!");
+		console.log(findResPost);
+		var likeList = findResPost.like.push(likeBody.liker);
+		postCollection.updateOne({ _id : likeBody.postID},{$set: {like : likeList}},function(err,updateResCom){
 			if(err)
 			{
 				res.status(200).json({
@@ -158,7 +225,7 @@ router.post('/like',urlencodedParser,function(req,res,next){
 					return;
 				}
 				console.log("find User success!");
-				var likeList = findResUser.like.push(likeBody.commentID);
+				var likeList = findResUser.like.push(likeBody.postID);
 				userCollection.updateOne({_id : likeBody.liker},{$set : {like : likeList}},function(err,updateResUser){
 					if(err)
 					{
@@ -179,7 +246,7 @@ router.post('/like',urlencodedParser,function(req,res,next){
 			})
 		})
 	});
-})
+});
 
 module.exports = router;
 
