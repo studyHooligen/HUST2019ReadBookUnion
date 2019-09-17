@@ -6,7 +6,6 @@ var logger = require('morgan');
 
 var accountRouter = require('./routes/account');
 var forumRouter = require('./routes/forum');
-var libSysRouter = require('./routes/libSys');
 
 var app = express();
 
@@ -26,7 +25,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/',accountRouter);
 app.use('/forum',forumRouter);
-app.use('/library',libSysRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
