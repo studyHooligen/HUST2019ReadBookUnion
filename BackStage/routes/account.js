@@ -115,6 +115,40 @@ router.post('/admin/login', urlencodedParser, function (req, res, next) {
 
 
 
+/*
+ * @function 管理员修改密码
+ * @param account(string) 账户, password(string) 密码
+ * @return code(int) , msg(string)
+ */
+router.post('/admin/changeUserPassword', urlencodedParser, function (req, res, next) {
+	let UserData = {
+		key:        req.body.key,
+		value:      req.body.value,
+		newPassword:req.body.newPassword
+	}
+	
+	let accountCollection = informationDB.getCollection("user");
+
+	checkCondition=UserData.key
+
+
+	
+	accountCollection.findOne({checkCondition:UserData.value}, function (err, data) {
+		if (data) {
+			    accountCollection.save(UserData)
+				res.status(200).json({ "code": 1 ,"msg": "密码修改成功"})
+			
+			
+		}
+		else{
+            res.status(200).json({"code":-1,"msg":"密码修改失败"})
+
+        }
+
+	});
+});
+
+
 
 
 
