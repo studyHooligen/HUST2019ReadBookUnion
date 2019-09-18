@@ -4,6 +4,7 @@ let router = express.Router();
 let bodyParser = require('body-parser');
 let urlencodedParser = bodyParser.urlencoded({ extended: false });
 var ObjectID = require('mongodb').ObjectID;
+var confMsgSend = require('../models/sms_tencent');
 
 // 跨域header设定
 router.all('*', function(req, res, next) {
@@ -15,6 +16,15 @@ router.all('*', function(req, res, next) {
 	next();
 });
 
+//短信发送demo
+router.post('/sendM',urlencodedParser,function(req,res,next){
+	randomRes = confMsgSend.sendMsg('18850124510');
+	console.log(randomRes);
+	res.status(200).json({
+		code	: 1,
+		confCode: randomRes
+	});
+})
 
 /*
  * @function 用户登录

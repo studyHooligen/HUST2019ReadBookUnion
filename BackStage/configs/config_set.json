@@ -1,3 +1,9 @@
 {
-    "DATABASE_URL": "mongodb://localhost:27017"
+    "DATABASE_URL"  : "mongodb://localhost:27017",
+    "APPID_SMS"     : 1400253874,
+    "APPKEY_SMS"    : "3513c1603f6fd1f2ac76f6322ebd5e81",
+    "FWSC_ID"       : "AKIDd3JJAplRSIuKUTxX0IWKvHRPf1CrxyRY",
+    "FWSC_KEY"      : "FG3d2KSMpgOgneEYcR0aBAxZGjy3ziNr",
+    "COS_BUCKET"    : " floatread-1300180028",
+    "PLACE_BUCKET"  : "ap-chengdu"
 }
