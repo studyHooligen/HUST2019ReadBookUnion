@@ -181,5 +181,24 @@ router.post('/like',urlencodedParser,function(req,res,next){
 	});
 })
 
+router.get('/checkAllPost',urlencodedParser,function(req,res,next){
+	var postCollection = informationDB.getCollection('post');
+	postCollection.find().toArray(function(err,allData){
+		if(err)
+		{
+			res.status(200).json({
+				code: -1,
+				msg	: "checkAllPost error"
+			});
+			return;
+		}
+		res.status(200).json({
+			code: 1,
+			data: allData
+		});
+		return;
+	})
+});
+
 module.exports = router;
 
