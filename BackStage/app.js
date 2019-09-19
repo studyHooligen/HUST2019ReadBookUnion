@@ -11,6 +11,7 @@ var libSysRouter = require('./routes/libSys');
 var app = express();
 
 let informationDB = require('./models/information_db');
+let smsServe = require('./models/sms_tencent');
 
 informationDB.connect();
 
