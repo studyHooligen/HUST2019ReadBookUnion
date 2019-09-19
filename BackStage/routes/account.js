@@ -36,6 +36,9 @@ router.post('/login', urlencodedParser, function (req, res, next) {
 		uid: req.body.uid,
 		password: req.body.password
 	}
+	let verifyData={
+		verCode:       req.body.verCode
+	}
 	
 	let accountCollection = informationDB.getCollection("user");
 	accountCollection.findOne({uid: UserData.uid}, function (err, data) {
@@ -44,7 +47,18 @@ router.post('/login', urlencodedParser, function (req, res, next) {
 				res.status(200).json({ "code": 1 ,"msg": "登陆成功"})
 			}
 			else {
-				res.status(200).json({ "code": -1 ,"msg": "密码错误"})
+                let randomRes = confMsgSend.sendMsg(submitData.phone);
+	           console.log(randomRes);
+	           res.status(200).json({
+		        code	: 1,
+		       confCode: randomRes
+			   });
+			   if(verfyData.verCode==randomRes){
+				res.status(200).json({ "code": 1 ,"msg": "登陆成功"})
+			   }
+			   else {
+				   res.status(200).json({"code":-1,"msg":"登陆失败"})
+			   }
 			}
 		}
 		else{
@@ -77,7 +91,7 @@ router.post('/register', urlencodedParser, function (req, res, next) {
 	let enrollmentCollection = informationDB.getCollection("user");
 	enrollmentCollection.findOne({uid: submitData.uid}, function (err, data) {
 		if(data){
-			randomRes = confMsgSend.sendMsg(submitData.phone);
+			let randomRes = confMsgSend.sendMsg(submitData.phone);
 	        console.log(randomRes);
 	        res.status(200).json({
 		    code	: 1,
