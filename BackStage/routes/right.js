@@ -204,7 +204,7 @@ router.get('/Opinion', urlencodedParser, function (req, res, next) {
 
 
 
-//心理宣泄版
+//意见反馈
 
 router.get('/Opinion/getTags', urlencodedParser, function (req, res, next) {
 
@@ -226,7 +226,7 @@ router.get('/Opinion/getTags', urlencodedParser, function (req, res, next) {
 
 
 
-//心理宣泄版
+//意见反馈
 
 router.get('/Opinion/getByTag', urlencodedParser, function (req, res, next) {
 
