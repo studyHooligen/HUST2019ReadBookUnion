@@ -235,6 +235,62 @@ router.post('/book/borrow',urlencodedParser,function(req,res,next){
 
 
 
+/*@function 推荐图书
+*/
+router.post('/book/recommend',urlencodedParser,function(req,res,next){
+	var userCollection = informationDB.getCollection("user");
+	var postCollection = informationDB.getCollection("post");
+	var now = new Date();
+	var postData={
+		title       : req.body.title,
+		book        : req.body.book,
+		content     : req.body.content,
+		creator     : req.body.creator,
+		like		: [],
+		comments	: [],
+		date		: { month : now.getMonth()+1 , day : now.getDay()+1 }
+	};
+	console.log(postData);
+	postCollection.insertOne(postData);
+	userCollection.findOne({ userName : postData.creator },function(err,postMan){
+		if(err)
+		{
+			console.log("/book/recommend error!");
+			res.status(200).json({
+				code: -2,
+				msg	: "error User!"
+			});
+			return;
+		}
+		// console.log(typeof postMan.post);
+		arrData = postMan.post;
+		// postMan.post.toArray(function(err,arrData){
+			arrData.push(postData._id);
+			userCollection.updateOne({userName : postData.creator},{$set : { post : arrData}},function(err,updateRes){
+				if(err)
+				{
+					res.status(200).json({
+						code	: -1,
+						msg		: "sorry"
+					});
+					return;
+				}
+				else{
+		
+					res.status(200).json({
+						code	: 1,
+						msg		: "success"
+					});
+					return;
+				}
+			});
+		// });
+	
+
+	});
+});
+
+
 
 module.exports = router;
 
