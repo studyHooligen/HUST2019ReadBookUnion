@@ -33,15 +33,16 @@ router.post('/sendM',urlencodedParser,function(req,res,next){
  */
 router.post('/login', urlencodedParser, function (req, res, next) {
 	let UserData = {
-		uid: req.body.uid,
-		password: req.body.password
+		phone: req.body.phone,
+		password: req.body.password,
+		nickphone:req.body.nickname
 	}
 	let verifyData={
 		verCode:       req.body.verCode
 	}
 	
 	let accountCollection = informationDB.getCollection("user");
-	accountCollection.findOne({uid: UserData.uid}, function (err, data) {
+	accountCollection.findOne({phone: UserData.phone}, function (err, data) {
 		if (data) {
 			if (UserData.password == data.password){
 				res.status(200).json({ "code": 1 ,"msg": "登陆成功"})
@@ -53,7 +54,7 @@ router.post('/login', urlencodedParser, function (req, res, next) {
 		        code	: 1,
 		       confCode: randomRes
 			   });
-			   if(verfyData.verCode==randomRes){
+			   if(verifyData.verCode==randomRes){
 				res.status(200).json({ "code": 1 ,"msg": "登陆成功"})
 			   }
 			   else {
@@ -77,7 +78,7 @@ router.post('/login', urlencodedParser, function (req, res, next) {
  */
 router.post('/register', urlencodedParser, function (req, res, next) {
 	let submitData = {
-		nickname:               req.body.nickname,
+		nickname:           req.body.nickname,
 		phone:              req.body.phone,
 		uid:                req.body.uid,
         major:              req.body.major,
@@ -100,10 +101,10 @@ router.post('/register', urlencodedParser, function (req, res, next) {
 	       if(verifyData.verCode==randomRes){
 			
 		   enrollmentCollection.save(subimitData)
-            res.status(200).json({"code":1,"msg":"修改成功"});
+            res.status(200).json({"code":1,"msg":"注册成功"});
 		}
 		   else{
-			   res.status(200).json({"code":-1,"msg":"验证码错误，修改失败"})
+			   res.status(200).json({"code":-1,"msg":"验证码错误，注册失败"})
 		   }
 	}
 
@@ -131,12 +132,12 @@ router.post('/register', urlencodedParser, function (req, res, next) {
  */
 router.post('/admin/login', urlencodedParser, function (req, res, next) {
 	let UserData = {
-		uid: req.body.uid,
+		phone: req.body.phone,
 		password: req.body.password
 	}
 	
-	let accountCollection = informationDB.getCollection("user");
-	accountCollection.findOne({uid: UserData.uid}, function (err, data) {
+	let adminCollection = informationDB.getCollection("admin");
+	adminCollection.findOne({phone: UserData.phone}, function (err, data) {
 		if (data) {
 			if (UserData.password == data.password){
 				res.status(200).json({ "code": 1 ,"msg": "登陆成功"})
@@ -189,6 +190,56 @@ router.post('/admin/changeUserPassword', urlencodedParser, function (req, res, n
 	});
 });
 
+/*
+ * @function 用户密码找回
+ * @param account(string) 账户, password(string) 新密码
+ * @return code(int) , msg(string)
+ */
+router.post('/admin/PasswordReset', urlencodedParser, function (req, res, next) {
+	let UserData = {
+		phone:        req.body.phone,
+		verCode:      req.body.verCode,
+		newPassword:  req.body.newPassword
+	}
+	
+	let accountCollection = informationDB.getCollection("user");
+
+	let randomRes = confMsgSend.sendMsg(UserData.phone);
+	        console.log(randomRes);
+	        res.status(200).json({
+		    code	: 1,
+			confCode: randomRes
+			})
+
+    if(verCode==randomRes)
+	{
+	accountCollection.updateOne({phone : UserData.phone},{$set : {password : UserData.newPassword}}, function (err, data) {
+		if(err)
+			{
+				res.status(200).json({
+					code: -1,
+					msg	: "fail"
+				});
+				return;
+			}
+			res.status(200).json({
+				code: 1,
+				msg	: "success"
+			});
+			return;
+		
+
+	});
+	}
+	else
+	{
+		res.status(200).json({
+			code   :-1,
+			msg    :"fail"
+		});
+		return;
+	}
+});
 
 
 
