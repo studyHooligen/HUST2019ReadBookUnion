@@ -175,20 +175,23 @@ router.post('/admin/changeUserPassword', urlencodedParser, function (req, res, n
 
 
 	
-	accountCollection.findOne({checkCondition:UserData.value}, function (err, data) {
-		if (data) {
-			    accountCollection.save(UserData)
-				res.status(200).json({ "code": 1 ,"msg": "密码修改成功"})
-			
-			
-		}
-		else{
-            res.status(200).json({"code":-1,"msg":"密码修改失败"})
 
-        }
-
+		accountCollection.updateOne({key : UserData.value},{$set : {password : UserData.newpassword}},function(err,updateRes){
+			if(err)
+			{
+				res.status(200).json({
+					code: -1,
+					msg	: "fail"
+				});
+				return;
+			}
+			res.status(200).json({
+				code: 1,
+				msg	: "success"
+			});
+			return;
+		})
 	});
-});
 
 /*
  * @function 用户密码找回
