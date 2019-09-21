@@ -203,62 +203,7 @@ router.get('/checkAllPost',urlencodedParser,function(req,res,next){
 });
 
 
-/*
-取消评论点赞
-*/
 
-router.post('/cancelLike',urlencodedParser,function(req,res,next){
-	var commentCollection = informationDB.getCollection('comment');
-	var userCollection = informationDB.getCollection('user');
-
-	var likeBody = {
-		commentID	: ObjectID(req.body.commentID),
-		liker		: req.body.liker
-	};
-
-	commentCollection.findOne({ _id : likeBody.commentID},function(err,findResCom){
-		if(err)
-			{
-				res.status(200).json({
-					code: -1,
-					msg	: "fail"
-				});
-				return;
-			}
-		console.log("find like for comment success!");
-		findResCom.like.deleteOne({_id:likeBody.liker},function(err,deleteResCom){
-			if(err)
-			{
-				res.status(200).json({
-					code: -1,
-					msg	: "fail"
-				});
-				return;
-			}
-		})
-		commentCollection.deleteOne({ _id : likeBody.commentID},{$set: {like : likeList}},function(err,updateResCom){
-			
-			console.log("delete like for comment success!");
-			userCollection.findOne({_id : likeBody.liker},function(err,findResUser){
-				if(err)
-				{
-					res.status(200).json({
-						code: -1,
-						msg	: "fail"
-					});
-					return;
-
-				}
-				res.status(200).json({
-					code: 1,
-					msg	: "success"
-				});
-				console.log("finish!");
-				return;
-			})
-		})
-	})
-});
 
 
 router.post('/cancelLike',urlencodedParser,function(req,res,next){
