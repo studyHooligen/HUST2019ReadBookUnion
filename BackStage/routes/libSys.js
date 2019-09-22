@@ -63,12 +63,12 @@ router.get('/admin/deleteBook',urlencodedParser,function(req,res,next){
 })
 
 /*
- * @function 查看书籍情况总览（管理员权限）
+ * @function 查看书籍情况总览
  * @param _id(string)书籍id，bookName(string)书名，tag(string)书籍标签，author(string)作者， 
  * status(bool)书籍是否可借阅，location(string)书籍地点
  * @return code(int) , msg(string)
  */
-router.get('/admin/checkAllBook',urlencodedParser,function(req,res,next){
+router.get('/checkAllBook',urlencodedParser,function(req,res,next){
 		let checkCondition={}
 		let cache
 		//console.log(req.body.borrowTime);
