@@ -188,7 +188,7 @@ router.get('/Opinion', urlencodedParser, function (req, res, next) {
 
 
 
-    let opinionCollection = informationDB.getCollection("pageViewer","PsychologyBoard");
+    let opinionCollection = informationDB.getCollection("opinion");
 
 
 
@@ -210,7 +210,7 @@ router.get('/Opinion/getTags', urlencodedParser, function (req, res, next) {
 
 
 
-    let opinionTagCollection = informationDB.getCollection("pageViewer","PsychologyBoardTag");
+    let opinionTagCollection = informationDB.getCollection("opinion");
 
 
 
@@ -236,7 +236,7 @@ router.get('/Opinion/getByTag', urlencodedParser, function (req, res, next) {
 
 
 
-	let opinionTagCollection = informationDB.getCollection("pageViewer","PsychologyBoardTag");
+	let opinionTagCollection = informationDB.getCollection("opinion");
 
 
 
