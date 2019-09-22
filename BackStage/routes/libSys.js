@@ -83,7 +83,7 @@ router.get('/checkAllBook',urlencodedParser,function(req,res,next){
 	
 		BookCollection=informationDB.getCollection('books');
 	
-		result=BorrowedCollection.find(checkCondition).toArray(function(err,allData){
+		result=BookCollection.find(checkCondition).toArray(function(err,allData){
 			res.status(200).json({
 				data : allData
 			})
