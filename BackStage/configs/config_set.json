@@ -5,5 +5,6 @@
     "FWSC_ID"       : "AKIDd3JJAplRSIuKUTxX0IWKvHRPf1CrxyRY",
     "FWSC_KEY"      : "FG3d2KSMpgOgneEYcR0aBAxZGjy3ziNr",
     "COS_BUCKET"    : " floatread-1300180028",
-    "PLACE_BUCKET"  : "ap-chengdu"
+    "PLACE_BUCKET"  : "ap-chengdu",
+    "COS_basicAddr" : "https://floatread-1300180028.cos.ap-chengdu.myqcloud.com/"
 }
