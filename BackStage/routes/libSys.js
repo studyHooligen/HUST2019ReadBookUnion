@@ -47,7 +47,7 @@ router.post('/book/return',urlencodedParser,function(req,res,next){
  */
 router.get('/admin/deleteBook',urlencodedParser,function(req,res,next){
 
-	BookCollection=informationDB.getCollection('BOOK');
+	BookCollection=informationDB.getCollection('books');
 
 	BookCollection.deleteOne({'_id' : ObjectID(req.body._id)},function(err,next){
 		if(!'_id') 
@@ -78,6 +78,7 @@ router.get('/checkAllBook',urlencodedParser,function(req,res,next){
 		if(cache=req.body.author) checkCondition.author=cache;
 		if(cache=req.body.status) checkCondition.status=cache; 
 		if(cache=req.body.location) checkCondition.location=cache;
+		if(!cache)  checkCondition={}
 		//console.log(checkCondition);
 	
 	
