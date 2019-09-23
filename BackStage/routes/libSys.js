@@ -26,11 +26,11 @@ router.post('/book/return',urlencodedParser,function(req,res,next){
 	BookCollection=informationDB.getCollection('books');
 	UserCollection=informationDB.getCollection('user');
 
-	BorrowCollection.findOne({'_id' : ObjectID(req.body._id)},function(err,borrowingData){
+	BorrowCollection.findOne({'bookID' : ObjectID(req.body.bookID)},function(err,borrowingData){
 		if(!borrowingData) {res.status(200).json({ 'code' : -1 , 'msg' : '错误'}); return;}
 		else
 		{
-		BorrowCollection.updateOne({'_id' : ObjectID(req.body._id)},
+		BorrowCollection.updateOne({bookID : req.body.bookID},
 			{'$set' : {
 				'place' : req.body.place,
 				'returnTime' : JSON.parse(req.body.time)
@@ -49,7 +49,7 @@ router.get('/admin/deleteBook',urlencodedParser,function(req,res,next){
 
 	BookCollection=informationDB.getCollection('books');
 
-	BookCollection.deleteOne({'_id' : ObjectID(req.body._id)},function(err,next){
+	BookCollection.deleteOne({bookID : req.body.bookID},function(err,next){
 		if(!'_id') 
 		res.status(200).json({'code' : 1, 'msg' : "删除成功"});
 		else
@@ -72,7 +72,7 @@ router.get('/checkAllBook',urlencodedParser,function(req,res,next){
 		let checkCondition={}
 		let cache
 		//console.log(req.body.borrowTime);
-		if(cache=req.body._id) checkCondition._id=JSON.parse(cache);//如果前端给的不是JSON是字符串，则需要转换
+		if(cache=req.body.bookID) checkCondition.bookID=JSON.parse(cache);//如果前端给的不是JSON是字符串，则需要转换
 		if(cache=req.body.bookName) checkCondition.bookName=cache;//同上
 		if(cache=req.body.tag) checkCondition.tag=cache;
 		if(cache=req.body.author) checkCondition.author=cache;
@@ -101,7 +101,7 @@ router.get('/admin/checkSingleBook', urlencodedParser, function (req, res, next)
 
 
 	let bookCollection = informationDB.getCollection("books");
-	bookCollection.findOne({'_id': ObjectID(req.body._id)}, function (err, getData) {
+	bookCollection.findOne({bookID: req.body.bookID}, function (err, getData) {
 		if(getData){
 			res.status(200).json({
 				code: 1,
@@ -136,7 +136,7 @@ router.post("/book/like",urlencodedParser,function(req,res,next){
 
 
 	bookCollection=informationDB.getCollection("books");
-	bookCollection.findOne({_id : ObjectID(req.body._id) },function(err, findRes){
+	bookCollection.findOne({bookID : req.body.bookID },function(err, findRes){
 		if(!findRes || err)
 		{
 			res.status(200).json({
