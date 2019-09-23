@@ -21,17 +21,19 @@ router.all('*', function(req, res, next) {
 router.post('/post',urlencodedParser,function(req,res,next){
 	var userCollection = informationDB.getCollection("user");
 	var postCollection = informationDB.getCollection("post");
+	var bookCollection = informationDB.getCollection("books");
 	var now = new Date();
 	var postData={
 		title       : req.body.title,
-		book        : req.body.book,
+		bookID        : req.body.bookID,
 		content     : req.body.content,
 		creator     : req.body.creator,
 		like		: [],
 		comments	: [],
 		date		: { month : now.getMonth()+1 , day : now.getDay()+1 }
 	};
-	console.log(postData);
+	bookCollection.find({bookID : postData.bookID},function(err,getData){
+	// console.log(postData);
 	postCollection.insertOne(postData);
 	userCollection.findOne({ userName : postData.creator },function(err,postMan){
 		if(err)
@@ -43,11 +45,12 @@ router.post('/post',urlencodedParser,function(req,res,next){
 			});
 			return;
 		}
+
 		// console.log(typeof postMan.post);
 		arrData = postMan.post;
 		// postMan.post.toArray(function(err,arrData){
-			arrData.push(postData._id);
-			userCollection.updateOne({userName : postData.creator},{$set : { post : arrData}},function(err,updateRes){
+			arrData.push(postData.bookID);
+			userCollection.updateOne({userName : postData.creator},{$set : { post : {getData,arrData}}},function(err,updateRes){
 				if(err)
 				{
 					res.status(200).json({
@@ -69,6 +72,7 @@ router.post('/post',urlencodedParser,function(req,res,next){
 	
 
 	});
+})
 });
 
 /*
@@ -185,6 +189,7 @@ router.post('/like',urlencodedParser,function(req,res,next){
 */
 router.get('/checkAllPost',urlencodedParser,function(req,res,next){
 	var postCollection = informationDB.getCollection('post');
+	var bookCollection = informationDB.getCollection('books');
 	postCollection.find().toArray(function(err,allData){
 		if(err)
 		{
@@ -194,10 +199,13 @@ router.get('/checkAllPost',urlencodedParser,function(req,res,next){
 			});
 			return;
 		}
-		res.status(200).json({
-			code: 1,
-			data: allData
-		});
+		bookCollection.findOne({bookName : allData.bookName}).toArray(function(err,getdata){
+            res.status(200).json({
+				code:1,
+				data: {allData ,getdata}
+			});
+		}
+			);
 		return;
 	})
 });
@@ -207,6 +215,7 @@ router.get('/checkAllPost',urlencodedParser,function(req,res,next){
 */
 router.get('/openOnePost',urlencodedParser,function(req,res,next){
 	var postCollection = informationDB.getCollection('post');
+	var bookCollection = informationDB.getCollection('books');
 	postCollection.find({_id:objectID(req.body._id)}).toArray(function(err,allData){
 		if(err)
 		{
@@ -216,10 +225,13 @@ router.get('/openOnePost',urlencodedParser,function(req,res,next){
 			});
 			return;
 		}
-		res.status(200).json({
-			code: 1,
-			data: allData
-		});
+		bookCollection.findOne({bookName : allData.bookName}).toArray(function(err,getdata){
+            res.status(200).json({
+				code:1,
+				data: {allData ,getdata}
+			});
+		}
+			);
 		return;
 	})
 });
@@ -230,6 +242,7 @@ router.get('/openOnePost',urlencodedParser,function(req,res,next){
 */
 router.get('/checkPersonalPost',urlencodedParser,function(req,res,next){
 	var postCollection = informationDB.getCollection('post');
+	var bookCollection = informationDB.getCollection('books');
 	postCollection.find({_id:req.body._id}).toArray(function(err,allData){
 		if(err)
 		{
@@ -239,10 +252,13 @@ router.get('/checkPersonalPost',urlencodedParser,function(req,res,next){
 			});
 			return;
 		}
-		res.status(200).json({
-			code: 1,
-			data: allData
-		});
+		bookCollection.findOne({bookName : allData.bookName}).toArray(function(err,getdata){
+            res.status(200).json({
+				code:1,
+				data: {allData ,getdata}
+			});
+		}
+			);
 		return;
 	})
 });
