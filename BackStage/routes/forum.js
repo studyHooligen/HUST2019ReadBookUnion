@@ -199,13 +199,13 @@ router.get('/checkAllPost',urlencodedParser,function(req,res,next){
 			});
 			return;
 		}
-		bookCollection.findOne({bookName : allData.bookName}).toArray(function(err,getdata){
+		bookCollection.findOne({bookName : allData.bookName}),function(err,getdata){
             res.status(200).json({
 				code:1,
 				data: {allData ,getdata}
 			});
 		}
-			);
+
 		return;
 	})
 });
