@@ -77,6 +77,7 @@ router.post('/login', urlencodedParser, function (req, res, next) {
  * @return code(int) , msg(string)
  */
 router.post('/register', urlencodedParser, function (req, res, next) {
+	
 	let submitData = {
 		nickname:           req.body.nickname,
 		phone:              req.body.phone,
@@ -85,6 +86,14 @@ router.post('/register', urlencodedParser, function (req, res, next) {
 		address:            req.body.address,
 		password:           req.body.password
 	}
+	let randomRes = confMsgSend.sendMsg(submitData.phone);
+	        console.log(randomRes);
+	        res.status(200).json({
+		    code	: 1,
+		    confCode: randomRes
+	});
+	
+	
 	let verifyData={
 		verCode:       req.body.verCode
 	}
@@ -92,37 +101,42 @@ router.post('/register', urlencodedParser, function (req, res, next) {
 	let enrollmentCollection = informationDB.getCollection("user");
 	enrollmentCollection.findOne({uid: submitData.uid}, function (err, data) {
 		if(data){
-			let randomRes = confMsgSend.sendMsg(submitData.phone);
-	        console.log(randomRes);
-	        res.status(200).json({
-		    code	: 1,
-		    confCode: randomRes
-	});
 	       if(verifyData.verCode==randomRes){
 			
 		   enrollmentCollection.save(subimitData)
-            res.status(200).json({"code":1,"msg":"注册成功"});
-		}
-		   else{
-			   res.status(200).json({"code":-1,"msg":"验证码错误，注册失败"})
+            res.status(200).json({"code":1,"msg":"修改成功"});
 		   }
-	}
-
-		else if (!data) {  
+		   else{
+			   res.status(200).json({"code":-1,"msg":"验证码错误，修改失败"});
+		   }
+		}
+	
+        
+           if (!data) {  
+			   if(verifyData.verCode==randomRes){
 			enrollmentCollection.insert(submitData);  
-			res.status(200).json({ "code": 1 ,"msg": "提交成功"});
+			res.status(200).json({ "code": 1 ,"msg": "注册成功"});
 		    }
-
+		
 		
 		    else{   
 			res.status(200).json({
 				code : -1,
-				msg : "fail"
+				msg : "注册失败"
 			})
 		}
+	}
+            else{
+				res.status(200).json({
+					code : -1,
+					msg  : "失败"
+				})
+			}
+
 
 	});
 });
+
 
 
 /*
