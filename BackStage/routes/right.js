@@ -37,8 +37,7 @@ router.post('/Opinion/send', urlencodedParser, function (req, res, next) {
 	}
 
 
-
-	console.log(req.body)
+    console.log(req.body)
 
 	postmessage.tags = JSON.parse(postmessage.tags)
 
