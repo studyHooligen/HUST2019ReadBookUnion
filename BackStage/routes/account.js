@@ -21,13 +21,13 @@ let captcha = [];
 //短信发送
 router.post('/sendM', urlencodedParser, function (req, res, next) {
 	let userData = {
-		phone = req.body.phone
+		phone: req.body.phone
 	}
 
 	randomRes = confMsgSend.sendMsg(userData.phone);
-	console.log(randomRes);
-	captcha[phone] = {
-		code: randomRes,
+	console.log("get captcha", randomRes);
+	captcha[userData.phone] = {
+		code: randomRes[0],
 		time: new Date()
 	};
 	res.status(200).json({
@@ -55,11 +55,19 @@ router.post('/login', urlencodedParser, function (req, res, next) {
 	accountCollection.findOne({ phone: UserData.phone }, function (err, data) {
 		if (data) {
 			if (UserData.password == data.password) {
-				res.status(200).json({ "code": 1, "msg": "登陆成功" })
+
+
+				res.status(200).json({ "code": 1, "msg": "登陆成功" ,
+				data: {
+					name : data.nickname,
+					userID  : data._id
+				}
+			})
 			}
 			else {
 
-					res.status(200).json({ "code": -1, "msg": "登陆失败" })
+				res.status(200).json({ "code": -1, "msg": "登陆失败" 
+			})
 			}
 		}
 		else {
@@ -86,31 +94,32 @@ router.post('/register', urlencodedParser, function (req, res, next) {
 		address: req.body.address,
 		password: req.body.password
 	}
-	let randomRes = confMsgSend.sendMsg(submitData.phone);
-	console.log(randomRes);
-	res.status(200).json({
-		code: 1,
-		confCode: randomRes
-	});
+	// let randomRes = confMsgSend.sendMsg(submitData.phone);
+	// console.log(randomRes);
+	// res.status(200).json({
+	// 	code: 1,
+	// 	confCode: randomRes
+	// });
 
 
-	let verifyData = {
-		verCode: req.body.vercode
-	}
+	// let verifyData = {
+	// 	verCode: req.body.vercode
+	// }
 
 	let v = false;
 	if (captcha[submitData.phone]) {
-		if (captcha[submitData.phone].code == verifyData.vercode &&
-			(new Date().getTime()) - captcha[submitData.phone].time.getTime() < 15 * 60 * 1000) {
+		console.log(captcha[submitData.phone].code, "eq", req.body.vercode);
+		if (captcha[submitData.phone].code == req.body.vercode &&
+			(new Date().getTime()) - captcha[submitData.phone].time.getTime() < 10 * 60 * 1000) {
+			console.log("Register captcha ok!");
 			v = true;
 		}
 	}
 
 	let enrollmentCollection = informationDB.getCollection("user");
-	enrollmentCollection.findOne({ uid: submitData.uid }, function (err, data) {
+	enrollmentCollection.findOne({ phone: submitData.phone }, function (err, data) {
 		if (data) {
 			if (v) {
-
 				enrollmentCollection.save(subimitData)
 				res.status(200).json({ "code": 1, "msg": "修改成功" });
 			}
@@ -118,15 +127,11 @@ router.post('/register', urlencodedParser, function (req, res, next) {
 				res.status(200).json({ "code": -1, "msg": "验证码错误，修改失败" });
 			}
 		}
-
-
-		if (!data) {
+		else {
 			if (v) {
 				enrollmentCollection.insert(submitData);
 				res.status(200).json({ "code": 1, "msg": "注册成功" });
 			}
-
-
 			else {
 				res.status(200).json({
 					code: -1,
@@ -134,14 +139,6 @@ router.post('/register', urlencodedParser, function (req, res, next) {
 				})
 			}
 		}
-		else {
-			res.status(200).json({
-				code: -1,
-				msg: "失败"
-			})
-		}
-
-
 	});
 });
 
