@@ -46,7 +46,6 @@ router.post('/login', urlencodedParser, function (req, res, next) {
 	let UserData = {
 		phone: req.body.phone,
 		password: req.body.password,
-		nickphone: req.body.nickname
 	}
 	let verifyData = {
 		verCode: req.body.verCode
@@ -59,18 +58,8 @@ router.post('/login', urlencodedParser, function (req, res, next) {
 				res.status(200).json({ "code": 1, "msg": "登陆成功" })
 			}
 			else {
-				let randomRes = confMsgSend.sendMsg(submitData.phone);
-				console.log(randomRes);
-				res.status(200).json({
-					code: 1,
-					confCode: randomRes
-				});
-				if (verifyData.verCode == randomRes) {
-					res.status(200).json({ "code": 1, "msg": "登陆成功" })
-				}
-				else {
+
 					res.status(200).json({ "code": -1, "msg": "登陆失败" })
-				}
 			}
 		}
 		else {
