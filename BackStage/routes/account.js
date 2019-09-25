@@ -16,9 +16,13 @@ router.all('*', function(req, res, next) {
 	next();
 });
 
-//短信发送demo
+//短信发送
 router.post('/sendM',urlencodedParser,function(req,res,next){
-	randomRes = confMsgSend.sendMsg('18850124510');
+    let userData={
+		phone = req.body.phone
+	}
+
+	randomRes = confMsgSend.sendMsg(userData.phone);
 	console.log(randomRes);
 	res.status(200).json({
 		code	: 1,
