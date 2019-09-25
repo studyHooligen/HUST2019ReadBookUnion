@@ -78,6 +78,7 @@ router.get('/checkAllBook',urlencodedParser,function(req,res,next){
 		if(cache=req.body.author) checkCondition.author=cache;
 		if(cache=req.body.status) checkCondition.status=cache; 
 		if(cache=req.body.location) checkCondition.location=cache;
+		if(cache=req.body.publish) checkCondition.publish=cache;
 		if(!cache)  checkCondition={}
 		//console.log(checkCondition);
 	
@@ -298,8 +299,8 @@ router.post('/book/recommend',urlencodedParser,function(req,res,next){
 router.get('/book/checkCondition',urlencodedParser,function(req,res,next){
 
     let borrowData ={
-		_id = req.body._id,
-		bookID = req.body.bookID
+		_id : req.body._id,
+		bookID : req.body.bookID
 
 	}
 
