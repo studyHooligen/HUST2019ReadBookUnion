@@ -292,6 +292,76 @@ router.post('/book/recommend',urlencodedParser,function(req,res,next){
 });
 
 
+/*
+ * @function 新用户注册/修改
+ * @param nickname(string)昵称，phone(string)电话,uid(string)学号,
+ * major(string)院系，address(string)住址,password(string)密码
+ * @return code(int) , msg(string)
+ */
+router.post('/register', urlencodedParser, function (req, res, next) {
+	
+	let submitData = {
+		nickname:           req.body.nickname,
+		phone:              req.body.phone,
+		uid:                req.body.uid,
+        major:              req.body.major,
+		address:            req.body.address,
+		password:           req.body.password
+	}
+	let randomRes = confMsgSend.sendMsg(submitData.phone);
+	        console.log(randomRes);
+	        res.status(200).json({
+		    code	: 1,
+		    confCode: randomRes
+	});
+	
+	
+	let verifyData={
+		verCode:       req.body.verCode
+	}
+
+	let enrollmentCollection = informationDB.getCollection("user");
+	enrollmentCollection.findOne({uid: submitData.uid}, function (err, data) {
+		if(data){
+	       if(verifyData.verCode==randomRes){
+			
+		   enrollmentCollection.save(subimitData)
+            res.status(200).json({"code":1,"msg":"修改成功"});
+		   }
+		   else{
+			   res.status(200).json({"code":-1,"msg":"验证码错误，修改失败"});
+		   }
+		}
+	
+        
+           if (!data) {  
+			   if(verifyData.verCode==randomRes){
+			enrollmentCollection.insert(submitData);  
+			res.status(200).json({ "code": 1 ,"msg": "注册成功"});
+		    }
+		
+		
+		    else{   
+			res.status(200).json({
+				code : -1,
+				msg : "注册失败"
+			})
+		}
+	}
+            else{
+				res.status(200).json({
+					code : -1,
+					msg  : "失败"
+				})
+			}
+
+
+	});
+});
+
+
+
+
 
 module.exports = router;
 
