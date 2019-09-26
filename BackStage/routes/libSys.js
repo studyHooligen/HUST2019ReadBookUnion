@@ -17,29 +17,49 @@ router.all('*', function (req, res, next) {
 
 
 
+
 /*
  * @function 还书
- * @param
+ * @param bookID, userID, location
  * @return code(int) , msg(string)
  */
 router.post('/book/return', urlencodedParser, function (req, res, next) {
-	BookCollection = informationDB.getCollection('books');
-	UserCollection = informationDB.getCollection('user');
+	let bookCollection = informationDB.getCollection('books');
+	let userCollection = informationDB.getCollection("user");
 
-	BorrowCollection.findOne({ 'bookID': ObjectID(req.body.bookID) }, function (err, borrowingData) {
-		if (!borrowingData) { res.status(200).json({ 'code': -1, 'msg': '错误' }); return; }
+	bookCollection.findOne({ bookID: req.body.bookID }, function (err, bk) {
+		if (!bk) {
+			res.status(200).json({ code: -1, msg: '错误' });
+		}
+		else if (bk.status === 0) {
+			res.status(200).json({ code: -2, msg: "书籍尚未借出" });
+		}
 		else {
-			BorrowCollection.updateOne({ bookID: req.body.bookID },
+			bookCollection.updateOne({ bookID: req.body.bookID },
 				{
 					'$set': {
-						'place': req.body.place,
-						'returnTime': JSON.parse(req.body.time)
+						location: req.body.location || "",
+						status: 0
+					}
+				}, function (errUpdate, resUpdate) {
+					if (errUpdate) {
+						res.status(200).json({ code: -1, msg: '还书错误' });
+					}
+					else {
+						userCollection.updateOne(
+							{ _id: ObjectID(req.body.userID) },
+							{ $set: { status: 0 } }
+						).then(() => {
+							res.status(200).json({ code: 1, msg: "归还成功" });
+						}).catch(() => {
+							res.status(200).json({ code: -1, msg: "归还失败" });
+						});
 					}
 				});
-			res.status(200).json({ 'code': 1, 'msg': '预约归还成功' });
 		}
 	});
 })
+
 
 /*
  * @function 删除图书（管理员权限）
@@ -171,48 +191,66 @@ router.post("/book/like", urlencodedParser, function (req, res, next) {
 
 
 
+
+
 /*
  * @function 用户借书
  * @param uid(string),bid(string)
  * @return data([array])
  */
-router.post('/book/borrow',urlencodedParser,function(req,res,next){
-	//假设前端已完成登录
-	LibraryCollection=informationDB.getCollection('books');
-	UserCollection=informationDB.getCollection('user');
+router.post('/book/borrow', urlencodedParser, function (req, res, next) {
+	// 假设前端已完成登录
 
-	let userDetail;
-	LibraryCollection.findOne({bookID : req.body.bookID},function(err,bookSituation){
-		console.log('id',req.body.bookID);
-		if(err) console.log("ERROR:" + err);
-		else{
-			//console.log(bookSituation)  //测试打开
-			if(!bookSituation) {res.status(200).json({ code : -1 , msg : "书籍不在架上",i:req.body.bookID}); return;}
-			else if(bookstituation.status==1) res.status(200).json({code : -2, msg : "书籍已借光"});
-				else {
-					UserCollection.findOne({'_id': objectID(req.body._id)},function(err,userD){
-						if(!userD){
-							res.status(200).json({ code : -3,msg : "没有这个用户"});
-						}
-						//console.log(userD);  //测试打开
-						else if(userD.borrowing.length>=1) res.status(200).json({code : -4, msg :"没有权限借书"});
-						else{
-		
-						   var borrowHistory = uerD.history;
-						   borrowHistory.push(req.body.bookID);
+	let libCollection = informationDB.getCollection('books');
+	let userCollection = informationDB.getCollection('user');
 
-							LibraryCollection.updateOne({bookID : req.body.bookID},{ $set: {status : 1 } },function (err, updateRes){
-								res.status(200).json({code : 1, msg : "借书成功"})
-							})
-							
+	libCollection.findOne({ bookID: req.body.bookID }, function (err, bk) {
+		// console.log('id', req.body.bookID)
+		// res.status(200).json({ code: -3, msg: JSON.stringify(bk), e: !!err });
 
-							
-						}
-					})
-				}
+		if (!!err) {
+			console.log("ERROR:", err);
+			res.status(200).json({ code: -500, msg: "Error" });
+		}
+		else {
+			// console.log(bk);  //测试打开
+			if (!bk || Object.keys(bk).length === 0) {
+				res.status(200).json({ code: -1, msg: "书籍不在架上" });
+			}
+			else if (bk.status === 1) {
+				res.status(200).json({ code: -2, msg: "书籍已借光" });
+			}
+			else {
+				// res.status(200).json({ code: -3, msg: JSON.stringify(bk), e: !!err });
+				userCollection.findOne({ '_id': ObjectID(req.body.userID) }, function (err2, us) {
+					if (!us) {
+						res.status(200).json({ code: -3, msg: "没有这个用户" });
+					}
+					else if (us.status === 1) {
+						res.status(200).json({ code: -4, msg: "没有权限借书" });
+					}
+					else {
+						userCollection.updateOne({ '_id': ObjectID(req.body.userID) },
+							{
+								$push: { history: req.body.bookID },
+								$set: { status: 1 }
+							}
+						)
+							.then(() => {
+								libCollection.updateOne(
+									{ bookID: req.body.bookID },
+									{ $set: { status: 1 } },
+									function (err3, updateRes) {
+										res.status(200).json({ code: 1, msg: "借书成功" });
+									});
+							});
+					}
+				});
+			}
 		}
 	});
 });
+
 
 /*@function 推荐图书
 */
@@ -274,9 +312,8 @@ router.post('/book/recommend', urlencodedParser, function (req, res, next) {
 router.post('/book/checkCondition', urlencodedParser, function (req, res, next) {
 
 	let borrowData = {
-		_id: req.body._id,
+		userID: req.body.userID,
 		bookID: req.body.bookID
-
 	}
 
 	BookCollection = informationDB.getCollection('books');
@@ -287,21 +324,21 @@ router.post('/book/checkCondition', urlencodedParser, function (req, res, next) 
 			res.status(200).json({ 'code': -1, 'msg': '没有这本书' });
 		}
 
-
 		else {
-			if (resData.status == 0) {
+			if (resData.status === 0) {
 				res.status(200).json({ 'code': 0, 'msg': '未借出' })
 			}
 			else {
-				accountCollection.findOne({ _id: borrowData._id }, function (err, getData) {
-					if (!getData)
+				accountCollection.findOne({ _id: ObjectID(borrowData.userID) }, function (err2, getData) {
+					if (!getData) {
 						res.status(200).json({ 'code': -2, 'msg': "没有这个用户" });
+					}
 					else {
-						if (getData.status == 0) {
+						if (getData.status === 0) {
 							res.status(200).json({ 'code': 1, 'msg': '别人借出' })
 						}
 						else {
-							if (getData.history[-1] == borrowData.bookID) {
+							if (getData.history && getData.history.length && getData.history[getData.history.length - 1] == borrowData.bookID) {
 								res.status(200).json({ 'code': 2, 'msg': '自己借出' })
 							}
 							else {
@@ -315,6 +352,7 @@ router.post('/book/checkCondition', urlencodedParser, function (req, res, next) 
 	})
 
 })
+
 
 module.exports = router;
 
