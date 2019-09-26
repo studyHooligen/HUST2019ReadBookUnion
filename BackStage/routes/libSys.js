@@ -166,79 +166,53 @@ router.post("/book/like", urlencodedParser, function (req, res, next) {
 	})
 });
 
+
+
+
+
+
 /*
- * @function 借书
- * @param
- * @return code(int) , msg(string)
+ * @function 用户借书
+ * @param uid(string),bid(string)
+ * @return data([array])
  */
-router.post('/book/borrow', urlencodedParser, function (req, res, next) {
+router.post('/book/borrow',urlencodedParser,function(req,res,next){
 	//假设前端已完成登录
-	BookCollection = informationDB.getCollection('books');
-	UserCollection = informationDB.getCollection('user');
+	LibraryCollection=informationDB.getCollection('books');
+	UserCollection=informationDB.getCollection('user');
 
+	let userDetail;
+	LibraryCollection.findOne({bookID : req.body.bookID},function(err,bookSituation){
+		console.log('id',req.body.bookID);
+		if(err) console.log("ERROR:" + err);
+		else{
+			//console.log(bookSituation)  //测试打开
+			if(!bookSituation) {res.status(200).json({ code : -1 , msg : "书籍不在架上",i:req.body.bookID}); return;}
+			else if(bookstituation.status==1) res.status(200).json({code : -2, msg : "书籍已借光"});
+				else {
+					UserCollection.findOne({'_id': objectID(req.body._id)},function(err,userD){
+						if(!userD){
+							res.status(200).json({ code : -3,msg : "没有这个用户"});
+						}
+						//console.log(userD);  //测试打开
+						else if(userD.borrowing.length>=1) res.status(200).json({code : -4, msg :"没有权限借书"});
+						else{
+		
+						   var borrowHistory = uerD.history;
+						   borrowHistory.push(req.body.bookID);
 
-	BookCollection.findOne({ _id: req.body._id }, function (err, next) {
-		if (err) console.log("ERROR:" + err);
-		else {
-			if (next.status == 1) { res.status(200).json({ code: -1, msg: "书籍已经借出" }); return; }
-			else {
-				UserCollection.findOne({ uid: req.body.uid }, function (err, userD) {
-					//console.log(userD);  //测试打开
-					if (userD.borrowing.length >= 1) res.status(200).json({ code: -1, msg: "没有权限借书" });
-					else {
-						let nowDate = new Date();
+							LibraryCollection.updateOne({bookID : req.body.bookID},{ $set: {status : 1 } },function (err, updateRes){
+								res.status(200).json({code : 1, msg : "借书成功"})
+							})
+							
 
-						BookCollection.updateOne({ '_id': ObjectID(req.body._id) },
-							{
-								'$set': {
-									'status': '1',
-									'returnTime': JSON.parse(req.body.time),
-									'location': JSON.parse(req.body.loacation)
-								},
-
-								borrower: {
-									uid: userD.uid
-								},
-								borrowTime: {
-									year: nowDate.getFullYear(),
-									month: nowDate.getMonth(),
-									day: nowDate.getDay()
-								},
-								returnTime: {
-									year: 0,
-									month: 0,
-									day: 0
-								},
-								location: "",
-								continueTime: 0
-							}, function (err, insertD) {
-
-
-								//用户记录更新
-								UserCollection.updateOne({ uid: req.body.uid },
-									{
-										'$set': {
-											borrowing: Array(userD.history).push(insertD.ops[0]._id),
-											'status': 1
-										}
-									});
-
-								res.status(200).json({
-									"code": 1,
-									'msg': '操作成功'
-								})
-							});
-
-
-
-					}
-				})
-			}
+							
+						}
+					})
+				}
 		}
 	});
 });
-
-
 
 /*@function 推荐图书
 */
