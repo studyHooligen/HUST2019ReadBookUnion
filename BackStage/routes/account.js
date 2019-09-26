@@ -28,7 +28,7 @@ router.post('/sendM', urlencodedParser, function (req, res, next) {
 	console.log("get captcha", randomRes);
 	captcha[userData.phone] = {
 		code: randomRes[0],
-		time: new Date()
+		time: new Date().getTime()
 	};
 	res.status(200).json({
 		code: 1,
@@ -47,34 +47,26 @@ router.post('/login', urlencodedParser, function (req, res, next) {
 		phone: req.body.phone,
 		password: req.body.password,
 	}
-	let verifyData = {
-		verCode: req.body.verCode
-	}
 
 	let accountCollection = informationDB.getCollection("user");
 	accountCollection.findOne({ phone: UserData.phone }, function (err, data) {
 		if (data) {
 			if (UserData.password == data.password) {
-
-
-				res.status(200).json({ "code": 1, "msg": "登陆成功" ,
-				data: {
-					name : data.nickname,
-					userID  : data._id
-				}
-			})
+				res.status(200).json({
+					code: 1, msg: "登陆成功",
+					data: {
+						name: data.nickname,
+						userID: data._id
+					}
+				});
 			}
 			else {
-
-				res.status(200).json({ "code": -1, "msg": "登陆失败" 
-			})
+				res.status(200).json({ code: -1, msg: "登陆失败" });
 			}
 		}
 		else {
-			res.status(200).json({ "code": -1, "msg": "你还未注册" })
-
+			res.status(200).json({ code: -1, msg: "你还未注册" });
 		}
-
 	});
 });
 
@@ -85,42 +77,37 @@ router.post('/login', urlencodedParser, function (req, res, next) {
  * @return code(int) , msg(string)
  */
 router.post('/register', urlencodedParser, function (req, res, next) {
-
 	let submitData = {
 		nickname: req.body.nickname,
 		phone: req.body.phone,
 		uid: req.body.uid,
 		major: req.body.major,
 		address: req.body.address,
-		password: req.body.password
+		password: req.body.password,
+		status: 0,
+		history: []
 	}
-	// let randomRes = confMsgSend.sendMsg(submitData.phone);
-	// console.log(randomRes);
-	// res.status(200).json({
-	// 	code: 1,
-	// 	confCode: randomRes
-	// });
-
-
-	// let verifyData = {
-	// 	verCode: req.body.vercode
-	// }
 
 	let v = false;
 	if (captcha[submitData.phone]) {
-		console.log(captcha[submitData.phone].code, "eq", req.body.vercode);
-		if (captcha[submitData.phone].code == req.body.vercode &&
-			(new Date().getTime()) - captcha[submitData.phone].time.getTime() < 10 * 60 * 1000) {
+		let u = captcha[submitData.phone];
+		if (u.code == req.body.vercode &&
+			(new Date().getTime()) - u.time < 10 * 60 * 1000) {
 			console.log("Register captcha ok!");
 			v = true;
 		}
 	}
 
-	let enrollmentCollection = informationDB.getCollection("user");
-	enrollmentCollection.findOne({ phone: submitData.phone }, function (err, data) {
+	if (!v) {
+		res.status(200).json({ code: -2, msg: "验证码错误" });
+		return;
+	}
+
+	let userCollection = informationDB.getCollection("user");
+	userCollection.findOne({ phone: submitData.phone }, function (err, data) {
 		if (data) {
 			if (v) {
-				enrollmentCollection.save(subimitData)
+				userCollection.save(subimitData)
 				res.status(200).json({ "code": 1, "msg": "修改成功" });
 			}
 			else {
@@ -129,14 +116,17 @@ router.post('/register', urlencodedParser, function (req, res, next) {
 		}
 		else {
 			if (v) {
-				enrollmentCollection.insert(submitData);
-				res.status(200).json({ "code": 1, "msg": "注册成功" });
+				userCollection.insert(submitData, function (errIns, resIns) {
+					if (errIns) {
+						res.status(200).json({ code: -1, msg: "注册失败" });
+					}
+					else {
+						res.status(200).json({ code: 1, "msg": "注册成功" });
+					}
+				});
 			}
 			else {
-				res.status(200).json({
-					code: -1,
-					msg: "注册失败"
-				})
+				res.status(200).json({ code: -1, msg: "注册失败" });
 			}
 		}
 	});
@@ -190,10 +180,7 @@ router.post('/admin/changeUserPassword', urlencodedParser, function (req, res, n
 
 	let accountCollection = informationDB.getCollection("user");
 
-	checkCondition = UserData.key
-
-
-
+	checkCondition = UserData.key;
 
 	accountCollection.updateOne({ key: UserData.value }, { $set: { password: UserData.newpassword } }, function (err, updateRes) {
 		if (err) {
@@ -216,58 +203,38 @@ router.post('/admin/changeUserPassword', urlencodedParser, function (req, res, n
  * @param account(string) 账户, password(string) 新密码
  * @return code(int) , msg(string)
  */
-router.post('/admin/PasswordReset', urlencodedParser, function (req, res, next) {
+router.post('/passwordReset', urlencodedParser, function (req, res, next) {
 	let UserData = {
 		phone: req.body.phone,
-		verCode: req.body.vercode,
-		newPassword: req.body.newPassword
+		vercode: req.body.vercode,
+		newPassword: req.body.password
 	}
 
 	let accountCollection = informationDB.getCollection("user");
 
-	let verifyData = {
-		verCode: req.body.vercode
-	}
-
 	let v = false;
-	if (captcha[submitData.phone]) {
-		if (captcha[submitData.phone].code == verifyData.vercode &&
-			(new Date().getTime()) - captcha[submitData.phone].time.getTime() < 15 * 60 * 1000) {
+	if (captcha[UserData.phone]) {
+		let u = captcha[UserData.phone];
+		if (u.code == UserData.vercode &&
+			(new Date().getTime()) - u.time < 10 * 60 * 1000) {
+			console.log("Register captcha ok!");
 			v = true;
 		}
 	}
 
-	if (v) {
-		accountCollection.updateOne({ phone: UserData.phone }, { $set: { password: UserData.newPassword } }, function (err, data) {
-			if (err) {
-				res.status(200).json({
-					code: -1,
-					msg: "fail"
-				});
-				return;
-			}
-			res.status(200).json({
-				code: 1,
-				msg: "success"
-			});
-			return;
-
-
-		});
+	if (!v) {
+		res.status(200).json({ code: -2, msg: "验证码错误" });
 	}
 	else {
-		res.status(200).json({
-			code: -1,
-			msg: "fail"
+		accountCollection.updateOne({ phone: UserData.phone }, { $set: { password: UserData.newPassword } }, function (err, data) {
+			if (err) {
+				res.status(200).json({ code: -1, msg: "fail" });
+			}
+			else {
+				res.status(200).json({ code: 1, msg: "success" });
+			}
 		});
-		return;
 	}
 });
 
-
-
-
-
-
 module.exports = router;
-
